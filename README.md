@@ -1,123 +1,44 @@
 # Reactivity
 
-Uma biblioteca Java simples e leve para manipulação de **Clipboard (área de transferência)** usando **JavaFX**, com foco em **arquitetura limpa**, **testabilidade** e **facilidade de uso**.
+Esta biblioteca contém classes que lidam com reatividade para aplicações Megalodonte. 
+Eu usei como inspiração o Vue, React e Jetpack compose. Essas classes de reatividade fazem uso dos listeners JavaFX internamente.
 
 ---
 
-## ✨ Objetivo
+## ✨ Classes disponíveis 
 
-O objetivo do **simple-clipboard** é fornecer uma API mínima e confiável para:
-- Copiar texto para o clipboard
-- Ler texto do clipboard
+- State<T>
+- ComputedState<T>
 
 Tudo isso sem expor detalhes internos do JavaFX para quem consome a biblioteca.
+    
 
 ---
 
-## 📦 Instalação (Maven Local)
-
-Após publicar a lib localmente:
-
-```bash
-./gradlew publishToMavenLocal
-```
-
-Adicione ao seu projeto:
-
-```gradle
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-dependencies {
-    implementation("megalodonte:simple-clipboard:1.0.0")
-}
-```
-
----
-
-## 🚀 Uso Básico
+## Uso básico com State
 
 ```java
-import megalodonte.Clipboard;
+import megalodonte.*;
 
-Clipboard.setString("Olá mundo");
+State<String> nameState = new State<>();
 
-String texto = Clipboard.getString();
-System.out.println(texto);
-```
-
----
-
-## 🧠 Arquitetura
-
-A biblioteca segue o **Princípio da Inversão de Dependência (DIP)**:
+new Text(nameState);
+new Input(newState);
 
 ```
-Clipboard (API pública)
-   ↓
-ClipboardProvider (interface)
-   ↓
-FxClipboardProvider (implementação JavaFX)
-```
 
-Isso permite:
-- Testes unitários sem JavaFX
-- Uso de Mockito
-- Evolução futura (ex: outra implementação de clipboard)
-
----
-
-## 🧪 Testes
-
-Os testes são **100% unitários**, usando **JUnit 5 + Mockito**, sem dependência de:
-- JavaFX Thread
-- Sistema operacional
-- Ambiente gráfico
-
-Exemplo de teste:
+## Uso básico com ComputedState
 
 ```java
-ClipboardProvider provider = mock(ClipboardProvider.class);
-Clipboard.setProvider(provider);
+import megalodonte.*;
 
-Clipboard.setString("teste");
+State<String> nameState = new State<>();
 
-verify(provider).setString("teste");
-```
+ComputedState<String> label = new ComputedState.of(v -> Your name is + nameState.get(), nameState);
 
----
+new Text(label);
+new Input(newState);
 
-## 🔧 Tecnologias
-
-- Java 21 (LTS)
-- JavaFX 17
-- JUnit 5
-- Mockito
-- Gradle
-
----
-
-## ⚠️ Observações Importantes
-
-- Java 25 **não é suportado** por Mockito/ByteBuddy no momento
-- Recomendado usar **Java 21 LTS**
-- A biblioteca é voltada para **texto**, não arquivos ou imagens
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-src/
- ├─ main/java/megalodonte/
- │   ├─ Clipboard.java
- │   ├─ ClipboardProvider.java
- │   └─ FxClipboardProvider.java
- │
- └─ test/java/megalodonte/
-     └─ ClipboardTest.java
 ```
 
 ---
