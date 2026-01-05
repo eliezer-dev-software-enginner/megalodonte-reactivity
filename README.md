@@ -1,5 +1,11 @@
 # Reactivity
 
+var showDetalhes = Show.when(
+produtoSelecionado, // ReadableState<Boolean>
+() -> new DetalhesProdutoComponent()
+);
+
+
 Uma biblioteca Java simples e leve para manipulação de **Clipboard (área de transferência)** usando **JavaFX**, com foco em **arquitetura limpa**, **testabilidade** e **facilidade de uso**.
 
 ---

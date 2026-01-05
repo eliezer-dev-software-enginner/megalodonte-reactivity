@@ -1,6 +1,7 @@
 package megalodonte;
 
 import javafx.scene.layout.Pane;
+import megalodonte.components.Component;
 
 import java.util.function.Supplier;
 
