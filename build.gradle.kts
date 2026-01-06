@@ -18,6 +18,26 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+
+    // gerar javadoc
+    withSourcesJar()
+    // withJavadocJar() // Temporariamente desabilitado devido a erros de tags
+}
+
+// Configuração do Javadoc
+tasks.named<Javadoc>("javadoc") {
+    if (JavaVersion.current().isJava9Compatible()) {
+        (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+        (options as StandardJavadocDocletOptions).addStringOption("source", "17")
+        (options as StandardJavadocDocletOptions).addStringOption("encoding", "UTF-8")
+        (options as StandardJavadocDocletOptions).addStringOption("docencoding", "UTF-8")
+        (options as StandardJavadocDocletOptions).addStringOption("charset", "UTF-8")
+        (options as StandardJavadocDocletOptions).links(
+            "https://docs.oracle.com/en/java/javase/17/docs/api/"
+        )
+        // Ignorar warnings para problemas menores
+        (options as StandardJavadocDocletOptions).addBooleanOption("Xdoclint:none", true)
+    }
 }
 
 
@@ -48,6 +68,10 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.named<Test>("test") {
+    dependsOn(tasks.named("jar"))
 }
 
 tasks.jar {

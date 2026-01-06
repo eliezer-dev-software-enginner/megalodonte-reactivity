@@ -4,6 +4,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Reactive component renderer that automatically updates a list of components
+ * when a state list changes. Provides declarative rendering similar to Jetpack Compose.
+ * 
+ * <p>ForEachState manages component reconciliation without diff, virtualization,
+ * or pagination. It follows a simple strategy: when the state changes, it creates
+ * new components for new items, removes components for deleted items, and replaces
+ * components for modified items.</p>
+ * 
+ * <h2>Example Usage:</h2>
+ * <pre>{@code
+ * // Create state with list of products
+ * State<List<Product>> productsState = State.of(Arrays.asList(
+ *     new Product("Coffee", 15.0),
+ *     new Product("Bread", 8.0)
+ * ));
+ * 
+ * // Create ForEachState that renders each product as a Button
+ * ForEachState<Product, Button> forEachState = ForEachState.of(
+ *     productsState,
+ *     product -> new Button(product.name + " - $" + product.price)
+ * );
+ * 
+ * // Use in UI components
+ * Column.of()
+ *     .c_child(new Text("Products"))
+ *     .items(forEachState) // Declarative reactive rendering
+ *     .c_child(new Button("Add Product", () -> productsState.add(new Item())));
+ * }</pre>
+ * 
+ * @param <T> the type of items in the state list
+ * @param <C> the type of components to render
+ * @author Eliezer
+ * @since 1.0.0
+ */
 public class ForEachState<T, C> {
     
     private final ReadableState<List<T>> state;

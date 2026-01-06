@@ -1,28 +1,45 @@
 # Reactivity
 
-Uma biblioteca Java simples e leve para manipulação de **Clipboard (área de transferência)** usando **JavaFX**, com foco em **arquitetura limpa**, **testabilidade** e **facilidade de uso**.
+A simple and lightweight Java library for **reactive state management** with focus on **clean architecture**, **testability**, and **ease of use**.
 
 ---
 
-## ✨ Objetivo
+## ✨ Features
 
-O objetivo do **simple-clipboard** é fornecer uma API mínima e confiável para:
-- Copiar texto para o clipboard
-- Ler texto do clipboard
+### 🔄 **State Management**
+- **State<T>** - Mutable state with subscription support
+- **ReadableState<T>** - Read-only state interface
+- **ComputedState<T>** - Derived/computed states
 
-Tudo isso sem expor detalhes internos do JavaFX para quem consome a biblioteca.
+### 📝 **List State Operations**
+Complete reactive list manipulation for **State<List<T>>**:
+
+#### 🔧 **Manipulation Methods**
+- `add(item)` - Add item to list
+- `removeLast()` - Remove last item
+- `remove(item)` - Remove specific item
+- `removeIf(predicate)` - Remove items matching predicate
+- `set(index, item)` - Replace item by position
+- `replace(oldItem, newItem)` - Replace first occurrence
+- `indexOf(item)` - Find item index
+- `clear()` - Remove all items
+
+#### 🔄 **Dynamic List Rendering**
+- **ForEachState** - Reactive component list rendering
+- Declarative API integration with Column/Row components
+- Automatic reconciliation when state changes
 
 ---
 
-## 📦 Instalação (Maven Local)
+## 📦 Installation (Maven Local)
 
-Após publicar a lib localmente:
+After publishing locally:
 
 ```bash
 ./gradlew publishToMavenLocal
 ```
 
-Adicione ao seu projeto:
+Add to your project:
 
 ```gradle
 repositories {
@@ -31,103 +48,218 @@ repositories {
 }
 
 dependencies {
-    implementation("megalodonte:simple-clipboard:1.0.0")
+    implementation("megalodonte:reactivity:1.0.0")
+    implementation("megalodonte:components:1.0.0") // For UI integration
 }
 ```
 
 ---
 
-## 🚀 Uso Básico
+## 🚀 Basic Usage
+
+### State Management
 
 ```java
-import megalodonte.Clipboard;
+import megalodonte.State;
 
-Clipboard.setString("Olá mundo");
+// Create state
+State<String> nameState = State.of("John");
 
-String texto = Clipboard.getString();
-System.out.println(texto);
+// Subscribe to changes
+nameState.subscribe(name -> {
+    System.out.println("Name changed to: " + name);
+});
+
+// Update state (triggers subscribers)
+nameState.set("Jane");
+```
+
+### List State Operations
+
+```java
+import megalodonte.State;
+import java.util.Arrays;
+
+// Create list state
+State<List<String>> itemsState = State.of(Arrays.asList("Apple", "Banana"));
+
+// Add items
+itemsState.add("Orange");
+
+// Remove items
+itemsState.removeLast();
+itemsState.remove("Apple");
+
+// Conditional remove
+itemsState.removeIf(item -> ((String)item).startsWith("B"));
+
+// Edit by index
+itemsState.set(0, "Grape");
+
+// Edit by reference
+itemsState.replace("Banana", "Mango");
+
+// Find item index
+int index = itemsState.indexOf("Mango");
+
+// Clear all
+itemsState.clear();
 ```
 
 ---
 
-## 🧠 Arquitetura
+## 🎨 ForEachState Integration
 
-A biblioteca segue o **Princípio da Inversão de Dependência (DIP)**:
+### Declarative API
 
+```java
+import megalodonte.*;
+import megalodonte.components.*;
+import java.util.Arrays;
+
+// Create reactive list
+State<List<Product>> productsState = State.of(Arrays.asList(
+    new Product("Coffee", 15.00),
+    new Product("Bread", 8.00)
+));
+
+// Create ForEachState
+ForEachState<Product, Button> forEachState = ForEachState.of(
+    productsState,
+    product -> new Button(product.name + " - $" + product.price)
+);
+
+// Declarative UI integration
+return new Column()
+    .c_child(new Text("Product List"))
+    .items(forEachState)                     // Automatic reactive rendering!
+    .c_child(new Button("Add Product", () -> {
+        productsState.add(new Product("New Item", 99.00));
+    }))
+    .c_child(new Button("Remove Last", () -> {
+        productsState.removeLast();
+    }));
 ```
-Clipboard (API pública)
-   ↓
-ClipboardProvider (interface)
-   ↓
-FxClipboardProvider (implementação JavaFX)
-```
 
-Isso permite:
-- Testes unitários sem JavaFX
-- Uso de Mockito
-- Evolução futura (ex: outra implementação de clipboard)
+### How ForEachState Works
+
+1. **Initial Rendering** - Creates components from initial state
+2. **State Changes** - Automatically reconciles when state updates
+3. **No Diff** - Simple replacement strategy (no virtualization)
+4. **No Layout** - Pure component management
+5. **No Pagination** - Renders all items
 
 ---
 
-## 🧪 Testes
+## 🧪 Architecture
 
-Os testes são **100% unitários**, usando **JUnit 5 + Mockito**, sem dependência de:
+### 🏗️ **Dependency Inversion Principle (DIP)**
+
+```
+State (Public API)
+    ↓
+ForEachState (Reactive Renderer)
+    ↓
+ComponentFactory (User-defined)
+```
+
+This enables:
+- Unit testing without JavaFX
+- Mockito integration
+- Future implementation flexibility
+
+---
+
+## 🧪 Testing
+
+Tests are **100% unitary**, using **JUnit 5 + Mockito**, without dependency on:
 - JavaFX Thread
-- Sistema operacional
-- Ambiente gráfico
+- Operating System
+- Graphical Environment
 
-Exemplo de teste:
+Example test:
 
 ```java
-ClipboardProvider provider = mock(ClipboardProvider.class);
-Clipboard.setProvider(provider);
-
-Clipboard.setString("teste");
-
-verify(provider).setString("teste");
+@Test
+void add_shouldAddItemToList() {
+    // Given
+    State<List<String>> state = State.of(Arrays.asList("item1"));
+    
+    // When
+    state.add("item2");
+    
+    // Then
+    List<String> result = state.get();
+    assertEquals(2, result.size());
+    assertTrue(result.contains("item2"));
+}
 ```
 
 ---
 
-## 🔧 Tecnologias
+## 🔧 Technologies
 
-- Java 21 (LTS)
-- JavaFX 17
-- JUnit 5
-- Mockito
-- Gradle
-
----
-
-## ⚠️ Observações Importantes
-
-- Java 25 **não é suportado** por Mockito/ByteBuddy no momento
-- Recomendado usar **Java 21 LTS**
-- A biblioteca é voltada para **texto**, não arquivos ou imagens
+- **Java 17** (LTS)
+- **JavaFX 17** (for UI components)
+- **JUnit 5**
+- **Mockito**
+- **Gradle**
 
 ---
 
-## 📁 Estrutura do Projeto
+## ⚠️ Important Notes
+
+- **No Virtualization** - Renders all items, suitable for small/medium lists
+- **No Diff Algorithm** - Simple reconciliation for performance
+- **No Layout Management** - Pure component state management
+- **Thread Safety** - Subscribe on same thread as UI updates
+
+---
+
+## 📁 Project Structure
 
 ```
 src/
  ├─ main/java/megalodonte/
- │   ├─ Clipboard.java
- │   ├─ ClipboardProvider.java
- │   └─ FxClipboardProvider.java
+ │   ├─ State.java                    # Mutable state
+ │   ├─ ReadableState.java           # Read-only interface
+ │   ├─ ComputedState.java           # Derived state
+ │   └─ ForEachState.java            # Reactive renderer
  │
  └─ test/java/megalodonte/
-     └─ ClipboardTest.java
+    ├─ StateTest.java               # State tests
+    ├─ StateListMethodsTest.java     # List operations tests
+    ├─ StateListExtendedMethodsTest.java # Edit operations tests
+    └─ ForEachStateTest.java        # Renderer tests
 ```
 
 ---
 
-## 📜 Licença
+## 🎯 Use Cases
+
+### 🛒 **ERP Applications**
+- Reactive product lists
+- Dynamic form fields
+- Real-time inventory management
+
+### 📱 **Desktop Applications**
+- Settings screens
+- Data tables
+- Dynamic menus
+
+### 🎮 **JavaFX Applications**
+- Reactive UI components
+- State synchronization
+- Component lifecycle management
+
+---
+
+## 📜 License
 
 MIT License
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Author
 
-Projeto desenvolvido por **Eliezer**.
+Developed by **Eliezer**.
