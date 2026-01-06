@@ -143,4 +143,73 @@ public class State<T> implements ReadableState<T> {
         
         return removed;
     }
+    
+    /**
+     * Substitui um item em uma posição específica da lista se este State contiver uma List<T>
+     * 
+     * @param index índice do item a ser substituído
+     * @param newItem novo item
+     * @throws IndexOutOfBoundsException se o índice for inválido
+     * @throws UnsupportedOperationException se o estado não contiver uma lista
+     */
+    @SuppressWarnings("unchecked")
+    public void set(int index, Object newItem) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.set(index, item) só funciona com State<List<T>>");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        if (index < 0 || index >= currentList.size()) {
+            throw new IndexOutOfBoundsException("Índice fora dos limites: " + index);
+        }
+        
+        List<Object> newList = new ArrayList<>(currentList);
+        newList.set(index, newItem);
+        
+        this.set((T) newList);
+    }
+    
+    /**
+     * Substitui a primeira ocorrência de um item específico na lista se este State contiver uma List<T>
+     * 
+     * @param oldItem item a ser substituído
+     * @param newItem novo item
+     * @return true se o item foi encontrado e substituído, false caso contrário
+     * @throws UnsupportedOperationException se o estado não contiver uma lista
+     */
+    @SuppressWarnings("unchecked")
+    public boolean replace(Object oldItem, Object newItem) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.replace() só funciona com State<List<T>>");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        List<Object> newList = new ArrayList<>(currentList);
+        
+        int index = newList.indexOf(oldItem);
+        if (index != -1) {
+            newList.set(index, newItem);
+            this.set((T) newList);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Encontra o índice de um item na lista se este State contiver uma List<T>
+     * 
+     * @param item item a ser encontrado
+     * @return índice do item, ou -1 se não encontrado
+     * @throws UnsupportedOperationException se o estado não contiver uma lista
+     */
+    @SuppressWarnings("unchecked")
+    public int indexOf(Object item) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.indexOf() só funciona com State<List<T>>");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        return currentList.indexOf(item);
+    }
 }
