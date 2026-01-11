@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "megalodonte"
-version = "1.0.0"
+version = "1.0.0-beta"
 
 repositories {
     mavenCentral()
@@ -61,7 +61,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.10.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.10.0")
 
-    implementation("megalodonte:components:1.0.0")
+    implementation("megalodonte:megalodonte-components:1.0.0-beta")
 
     // Dependências JavaFX removidas (agora gerenciadas pelo bloco 'javafx { ... }')
 }
@@ -75,7 +75,7 @@ tasks.named<Test>("test") {
 }
 
 tasks.jar {
-    archiveBaseName.set("reactivity")
+    archiveBaseName.set("megalodonte-reactivity")
 
     manifest {
         attributes(
@@ -90,7 +90,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            artifactId = "reactivity"
+            artifactId = "megalodonte-reactivity"
         }
     }
 }

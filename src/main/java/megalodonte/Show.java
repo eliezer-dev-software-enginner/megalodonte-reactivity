@@ -1,5 +1,6 @@
 package megalodonte;
 
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import megalodonte.components.Component;
 
@@ -25,6 +26,18 @@ import java.util.function.Supplier;
  * @author Eliezer
  * @since 1.0.0
  */
+
+//class Component{
+//    Node node;
+//    public Component(Pane pane) {
+//
+//    }
+//
+//    public Node getNode() {
+//        return node;
+//    }
+//}
+
 public final class Show extends Component {
 
 private final ReadableState<Boolean> condition;
