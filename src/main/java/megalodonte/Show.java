@@ -40,9 +40,13 @@ import java.util.function.Supplier;
 
 public final class Show extends Component {
 
-private final ReadableState<Boolean> condition;
+    private final ReadableState<Boolean> condition;
     private final Supplier<Component> childFactory;
     private Component mountedChild;
+    
+    // For conditional builder
+    private Supplier<Component> trueComponent;
+    private Supplier<Component> falseComponent;
 
     /**
      * Creates a new Show component with the specified condition and child factory.
@@ -74,7 +78,26 @@ private final ReadableState<Boolean> condition;
             ) {
         return new Show(condition, childFactory);
     }
-
+    
+/**
+     * Factory method for conditional rendering with true/false branches.
+     * 
+     * @param condition reactive boolean state controlling which branch to render
+     * @param trueComponent factory for component when condition is true
+     * @param falseComponent factory for component when condition is false
+     * @return a new Show instance
+     */
+    public static Show when(
+            ReadableState<Boolean> condition,
+            Supplier<Component> trueComponent,
+            Supplier<Component> falseComponent
+            ) {
+        return new Show(condition, () -> {
+            boolean conditionValue = condition.get();
+            return conditionValue ? trueComponent.get() : falseComponent.get();
+        });
+    }
+    
     /**
      * Updates the component visibility based on the condition.
      * Shows child when condition becomes true, hides when false.
