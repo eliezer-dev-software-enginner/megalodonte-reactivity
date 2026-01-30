@@ -61,6 +61,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.10.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.10.0")
 
+    implementation("megalodonte:megalodonte-base:1.0.0-beta")
     implementation("megalodonte:megalodonte-components:1.0.0-beta")
 
     // Dependências JavaFX removidas (agora gerenciadas pelo bloco 'javafx { ... }')

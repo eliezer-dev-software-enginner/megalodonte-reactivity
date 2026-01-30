@@ -1,1 +1,1 @@
-rootProject.name = "reactivity"
+rootProject.name = "megalodonte-reactivity"
