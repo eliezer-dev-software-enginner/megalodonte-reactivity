@@ -14,9 +14,12 @@ import java.util.function.Predicate;
  * Whenever the value changes, all registered subscribers are automatically notified.</p>
  * 
  * <p>For list operations, use specialized methods:
- * {@link #add(Object)}, {@link #remove(Object)}, {@link #removeLast()},
- * {@link #removeIf(Predicate)}, {@link #set(int, Object)},
- * {@link #replace(Object, Object)}, {@link #indexOf(Object)}, {@link #clear()}</p>
+ * {@link #add(Object)}, {@link #addAll(java.util.Collection)}, {@link #addAll(Object[])},
+ * {@link #remove(Object)}, {@link #removeLast()}, {@link #removeAll(java.util.Collection)},
+ * {@link #removeIf(Predicate)}, {@link #retainAll(java.util.Collection)},
+ * {@link #set(int, Object)}, {@link #replace(Object, Object)}, {@link #indexOf(Object)},
+ * {@link #contains(Object)}, {@link #containsAll(java.util.Collection)},
+ * {@link #size()}, {@link #isEmpty()}, {@link #get(int)}, {@link #clear()}</p>
  * 
  * <h2>Example Usage:</h2>
  * <pre>{@code
@@ -107,6 +110,52 @@ public class State<T> implements ReadableState<T> {
         List<Object> currentList = (List<Object>) value;
         List<Object> newList = new ArrayList<>(currentList);
         newList.add(item);
+        
+        this.set((T) newList);
+    }
+    
+    /**
+     * Adds all items from the specified collection to the list if this State contains a List<T>
+     * 
+     * @param items collection of items to be added
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     * @throws IllegalArgumentException if items is null
+     */
+    @SuppressWarnings("unchecked")
+    public void addAll(java.util.Collection<?> items) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.addAll() only works with State<List<T>>");
+        }
+        if (items == null) {
+            throw new IllegalArgumentException("Items collection cannot be null");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        List<Object> newList = new ArrayList<>(currentList);
+        newList.addAll(items);
+        
+        this.set((T) newList);
+    }
+    
+    /**
+     * Adds all items from the specified array to the list if this State contains a List<T>
+     * 
+     * @param items array of items to be added
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     * @throws IllegalArgumentException if items is null
+     */
+    @SuppressWarnings("unchecked")
+    public void addAll(Object[] items) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.addAll() only works with State<List<T>>");
+        }
+        if (items == null) {
+            throw new IllegalArgumentException("Items array cannot be null");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        List<Object> newList = new ArrayList<>(currentList);
+        java.util.Collections.addAll(newList, items);
         
         this.set((T) newList);
     }
@@ -262,5 +311,151 @@ public class State<T> implements ReadableState<T> {
         
         List<Object> currentList = (List<Object>) value;
         return currentList.indexOf(item);
+    }
+    
+    /**
+     * Removes all items from the list that are present in the specified collection 
+     * if this State contains a List<T>
+     * 
+     * @param items collection of items to be removed
+     * @return true if the list changed as a result of this call
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     * @throws IllegalArgumentException if items is null
+     */
+    @SuppressWarnings("unchecked")
+    public boolean removeAll(java.util.Collection<?> items) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.removeAll() only works with State<List<T>>");
+        }
+        if (items == null) {
+            throw new IllegalArgumentException("Items collection cannot be null");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        List<Object> newList = new ArrayList<>(currentList);
+        boolean changed = newList.removeAll(items);
+        
+        if (changed) {
+            this.set((T) newList);
+        }
+        
+        return changed;
+    }
+    
+    /**
+     * Retains only the items in the list that are contained in the specified collection 
+     * if this State contains a List<T>
+     * 
+     * @param items collection of items to be retained
+     * @return true if the list changed as a result of this call
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     * @throws IllegalArgumentException if items is null
+     */
+    @SuppressWarnings("unchecked")
+    public boolean retainAll(java.util.Collection<?> items) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.retainAll() only works with State<List<T>>");
+        }
+        if (items == null) {
+            throw new IllegalArgumentException("Items collection cannot be null");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        List<Object> newList = new ArrayList<>(currentList);
+        boolean changed = newList.retainAll(items);
+        
+        if (changed) {
+            this.set((T) newList);
+        }
+        
+        return changed;
+    }
+    
+    /**
+     * Checks if the list contains the specified item if this State contains a List<T>
+     * 
+     * @param item item to check for presence
+     * @return true if the list contains the item
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     */
+    @SuppressWarnings("unchecked")
+    public boolean contains(Object item) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.contains() only works with State<List<T>>");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        return currentList.contains(item);
+    }
+    
+    /**
+     * Checks if the list contains all items from the specified collection if this State contains a List<T>
+     * 
+     * @param items collection of items to check for presence
+     * @return true if the list contains all items
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     * @throws IllegalArgumentException if items is null
+     */
+    @SuppressWarnings("unchecked")
+    public boolean containsAll(java.util.Collection<?> items) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.containsAll() only works with State<List<T>>");
+        }
+        if (items == null) {
+            throw new IllegalArgumentException("Items collection cannot be null");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        return currentList.containsAll(items);
+    }
+    
+    /**
+     * Returns the number of items in the list if this State contains a List<T>
+     * 
+     * @return the number of items in the list
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     */
+    @SuppressWarnings("unchecked")
+    public int size() {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.size() only works with State<List<T>>");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        return currentList.size();
+    }
+    
+    /**
+     * Checks if the list is empty if this State contains a List<T>
+     * 
+     * @return true if the list is empty
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     */
+    @SuppressWarnings("unchecked")
+    public boolean isEmpty() {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.isEmpty() only works with State<List<T>>");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        return currentList.isEmpty();
+    }
+    
+    /**
+     * Returns the item at the specified position in the list if this State contains a List<T>
+     * 
+     * @param index index of the item to return
+     * @return the item at the specified position
+     * @throws IndexOutOfBoundsException if the index is out of range
+     * @throws UnsupportedOperationException if the state doesn't contain a list
+     */
+    @SuppressWarnings("unchecked")
+    public Object get(int index) {
+        if (!(value instanceof List)) {
+            throw new UnsupportedOperationException("State.get() only works with State<List<T>>");
+        }
+        
+        List<Object> currentList = (List<Object>) value;
+        return currentList.get(index);
     }
 }
