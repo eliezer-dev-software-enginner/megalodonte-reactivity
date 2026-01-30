@@ -307,14 +307,36 @@ public class ListState<E> implements ReadableState<List<E>> {
         return value.isEmpty();
     }
 
-    /**
+/**
      * Returns the item at the specified position in the list.
      * 
-     * @param index index of the item to return
+     * @param index index of the item to be returned
      * @return the item at the specified position
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public E get(int index) {
         return value.get(index);
+    }
+
+    /**
+     * Updates the first item matching the predicate by applying the update function.
+     * This is more efficient than remove-then-add for large lists.
+     * 
+     * @param predicate to find the item to update
+     * @param updater function that takes the old item and returns the updated item
+     * @return true if an item was found and updated, false otherwise
+     */
+    public boolean updateIf(Predicate<E> predicate, java.util.function.Function<E, E> updater) {
+        for (int i = 0; i < value.size(); i++) {
+            E item = value.get(i);
+            if (predicate.test(item)) {
+                E updatedItem = updater.apply(item);
+                List<E> newList = new ArrayList<>(value);
+                newList.set(i, updatedItem);
+                set(newList);
+                return true;
+            }
+        }
+        return false;
     }
 }
