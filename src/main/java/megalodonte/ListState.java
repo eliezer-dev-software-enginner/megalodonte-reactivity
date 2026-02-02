@@ -50,6 +50,11 @@ public class ListState<E> implements ReadableState<List<E>> {
         return value;
     }
 
+    @Override
+    public boolean isNull() {
+        return get() == null;
+    }
+
     /**
      * Sets a new list for this state and notifies all subscribers if the list changed.
      * 

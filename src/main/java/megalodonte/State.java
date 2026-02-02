@@ -60,6 +60,11 @@ public class State<T> implements ReadableState<T> {
         return value;
     }
 
+    @Override
+    public boolean isNull() {
+        return get() == null;
+    }
+
     /**
      * Sets a new value for this state and notifies all subscribers if the value changed.
      * The method has built-in protection against setting the same value to avoid unnecessary notifications.

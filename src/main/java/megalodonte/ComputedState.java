@@ -67,6 +67,11 @@ public class ComputedState<T> implements ReadableState<T> {
         listener.accept(value);
     }
 
+    @Override
+    public boolean isNull() {
+        return get() == null;
+    }
+
     /**
      * Creates a new computed state with the specified computation and dependencies.
      * 

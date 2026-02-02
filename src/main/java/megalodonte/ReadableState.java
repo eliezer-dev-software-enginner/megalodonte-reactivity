@@ -23,6 +23,7 @@ package megalodonte;
  */
 public interface ReadableState<T> {
     T get();
+    boolean isNull();
     void subscribe(java.util.function.Consumer<T> listener);
 
     default <R> ReadableState<R> map(java.util.function.Function<T, R> mapper) {
