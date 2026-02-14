@@ -93,6 +93,7 @@ public class State<T> implements ReadableState<T> {
      */
     public void subscribe(Consumer<T> listener) {
         listeners.add(listener);
+        ListenerManager.register(listener);
         listener.accept(value);
     }
 }

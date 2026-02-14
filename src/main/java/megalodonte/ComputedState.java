@@ -64,6 +64,7 @@ public class ComputedState<T> implements ReadableState<T> {
     @Override
     public void subscribe(Consumer<T> listener) {
         listeners.add(listener);
+        ListenerManager.register(listener);
         listener.accept(value);
     }
 

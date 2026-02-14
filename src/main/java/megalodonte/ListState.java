@@ -79,6 +79,7 @@ public class ListState<E> implements ReadableState<List<E>> {
      */
     public void subscribe(Consumer<List<E>> listener) {
         listeners.add(listener);
+        ListenerManager.register(listener);
         listener.accept(value);
     }
 
