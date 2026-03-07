@@ -60,6 +60,16 @@ public class State<T> implements ReadableState<T> {
         return value;
     }
 
+    /**
+     * Returns the current value of this state.
+     *
+     * @return current value
+     */
+    public T getOrDefault(T defaultValue) {
+        return value == null? defaultValue : value;
+    }
+
+
     @Override
     public boolean isNull() {
         return get() == null;
