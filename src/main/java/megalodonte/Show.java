@@ -1,9 +1,9 @@
 package megalodonte;
 
 import javafx.scene.layout.Pane;
-import megalodonte.base.Component;
 
 import java.util.function.Supplier;
+import megalodonte.base.components.Component;
 
 /**
  * Demonstrates conditional component rendering using reactive state.
