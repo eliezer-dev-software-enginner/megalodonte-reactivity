@@ -27,6 +27,7 @@ import megalodonte.base.components.Component;
  */
 
 
+@Deprecated(forRemoval = true, since = "01/abr/2026")
 public final class Show extends Component {
 
     private final ReadableState<Boolean> condition;
