@@ -41,6 +41,17 @@ public class ListState<E> implements ReadableState<List<E>> {
         return new ListState<>(initial);
     }
 
+
+    /**
+     * Creates a new ListState with the specified initial list.
+     *
+     * @param <E> type of elements
+     * @return a new ListState instance with empty list
+     */
+    public static <E> ListState<E> ofEmpty() {
+        return new ListState<>(List.of());
+    }
+
     /**
      * Returns the current list value of this state.
      * 
