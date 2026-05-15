@@ -11,57 +11,50 @@ import java.util.function.Supplier;
  * Shows or hides a component based on reactive state.
  */
 public final class Show extends Component {
-
     private final ReadableState<Boolean> condition;
-    private final Supplier<Component> childFactory;
-    private Component mountedChild;
+    private final Component trueChild;
+    private final Component falseChild; // null no modo single
 
-    private Show(
-            ReadableState<Boolean> condition,
-            Supplier<Component> childFactory
-    ) {
+    private Show(ReadableState<Boolean> condition,
+                 Component trueChild,
+                 Component falseChild) {
         super(new VBox());
-
-        this.condition = condition;
-        this.childFactory = childFactory;
-
-        // Cria o componente uma única vez
-        mountedChild = childFactory.get();
+        this.condition  = condition;
+        this.trueChild  = trueChild;
+        this.falseChild = falseChild;
 
         VBox box = (VBox) node;
-        box.getChildren().add(mountedChild.getNode());
 
-        // Estado inicial
-        boolean initial = condition.get();
-        mountedChild.getNode().setVisible(initial);
-        mountedChild.getNode().setManaged(initial);
-
-        // Reatividade
-        condition.subscribe(this::update);
-    }
-
-    public static Show when(
-            ReadableState<Boolean> condition,
-            Supplier<Component> childFactory
-    ) {
-        return new Show(condition, childFactory);
-    }
-
-    public static Show when(
-            ReadableState<Boolean> condition,
-            Supplier<Component> trueComponent,
-            Supplier<Component> falseComponent
-    ) {
-        return new Show(condition, () -> {
-            boolean conditionValue = condition.get();
-            return conditionValue ? trueComponent.get() : falseComponent.get();
-        });
-    }
-
-    private void update(boolean visible) {
-        if (mountedChild != null) {
-            mountedChild.getNode().setVisible(visible);
-            mountedChild.getNode().setManaged(visible);
+        if (falseChild != null) {
+            box.getChildren().addAll(trueChild.getNode(), falseChild.getNode());
+        } else {
+            box.getChildren().add(trueChild.getNode());
         }
+
+        applyVisibility(condition.get());
+        condition.subscribe(this::applyVisibility);
+    }
+
+    private void applyVisibility(boolean value) {
+        setVisible(trueChild,  value);
+        if (falseChild != null) setVisible(falseChild, !value);
+    }
+
+    private static void setVisible(Component c, boolean v) {
+        c.getNode().setVisible(v);
+        c.getNode().setManaged(v);
+    }
+
+    // Factory: modo single (esconde/mostra um único filho)
+    public static Show when(ReadableState<Boolean> condition,
+                            Supplier<Component> childFactory) {
+        return new Show(condition, childFactory.get(), null);
+    }
+
+    // Factory: modo ternário (alterna entre dois filhos)
+    public static Show when(ReadableState<Boolean> condition,
+                            Supplier<Component> trueFactory,
+                            Supplier<Component> falseFactory) {
+        return new Show(condition, trueFactory.get(), falseFactory.get());
     }
 }
