@@ -1,5 +1,6 @@
 package megalodonte.v2;
 
+import javafx.animation.Animation;
 import javafx.scene.layout.VBox;
 import megalodonte.ReadableState;
 import megalodonte.base.components.Component;
@@ -14,6 +15,8 @@ public final class Show extends Component {
     private final ReadableState<Boolean> condition;
     private final Component trueChild;
     private final Component falseChild; // null no modo single
+
+    private Transition transition; // null = sem animação
 
     private Show(ReadableState<Boolean> condition,
                  Component trueChild,
@@ -35,14 +38,37 @@ public final class Show extends Component {
         condition.subscribe(this::applyVisibility);
     }
 
-    private void applyVisibility(boolean value) {
-        setVisible(trueChild,  value);
-        if (falseChild != null) setVisible(falseChild, !value);
+    // Fluent — encadeia após o when()
+    public Show withTransition(Transition transition) {
+        this.transition = transition;
+        return this;
     }
 
-    private static void setVisible(Component c, boolean v) {
-        c.getNode().setVisible(v);
-        c.getNode().setManaged(v);
+    private void applyVisibility(boolean value) {
+        applyTo(trueChild, value);
+        if (falseChild != null) applyTo(falseChild, !value);
+    }
+
+    private void applyTo(Component c, boolean entering) {
+        if (transition == null) {
+            c.getNode().setVisible(entering);
+            c.getNode().setManaged(entering);
+            return;
+        }
+        if (entering) {
+            c.getNode().setVisible(true);
+            c.getNode().setManaged(true);
+        }
+        Animation anim = transition.play(c, entering);
+        if (anim != null) {
+            if (!entering) {
+                anim.setOnFinished(e -> {
+                    c.getNode().setVisible(false);
+                    c.getNode().setManaged(false);
+                });
+            }
+            anim.play();
+        }
     }
 
     // Factory: modo single (esconde/mostra um único filho)
