@@ -21,6 +21,7 @@ import java.util.function.Predicate;
  * @author Eliezer
  * @since 1.0.0
  */
+@Deprecated
 public class ListState<E> implements ReadableState<List<E>> {
 
     private List<E> value;
