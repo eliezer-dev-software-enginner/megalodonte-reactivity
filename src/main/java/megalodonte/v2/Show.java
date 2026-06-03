@@ -2,7 +2,7 @@ package megalodonte.v2;
 
 import javafx.animation.Animation;
 import javafx.scene.layout.VBox;
-import megalodonte.ReadableState;
+import megalodonte.base.state.ReadableState;
 import megalodonte.base.components.Component;
 
 import java.util.function.Supplier;

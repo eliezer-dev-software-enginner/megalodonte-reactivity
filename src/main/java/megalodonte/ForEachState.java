@@ -1,5 +1,6 @@
 package megalodonte;
 
+import megalodonte.base.state.ReadableState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
