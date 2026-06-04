@@ -22,7 +22,7 @@ import java.util.function.Predicate;
  * @author Eliezer
  * @since 1.0.0
  */
-@Deprecated
+@Deprecated(forRemoval = true,  since = "04/jun/2026")
 public class ListState<E> implements ReadableState<List<E>> {
 
     private List<E> value;
