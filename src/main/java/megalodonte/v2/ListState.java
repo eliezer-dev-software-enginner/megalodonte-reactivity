@@ -1,7 +1,7 @@
 package megalodonte.v2;
 
 import megalodonte.ListenerManager;
-import megalodonte.ReadableState;
+import megalodonte.base.state.ReadableState;
 
 import java.util.ArrayList;
 import java.util.List;
