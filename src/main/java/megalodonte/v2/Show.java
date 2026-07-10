@@ -4,6 +4,7 @@ import javafx.animation.Animation;
 import javafx.scene.layout.VBox;
 import megalodonte.base.state.ReadableState;
 import megalodonte.base.components.Component;
+import megalodonte.base.state.State;
 
 import java.util.function.Supplier;
 
@@ -82,5 +83,17 @@ public final class Show extends Component {
                             Supplier<Component> trueFactory,
                             Supplier<Component> falseFactory) {
         return new Show(condition, trueFactory.get(), falseFactory.get());
+    }
+
+    // Factory: modo single, condição não-reativa (boolean puro)
+    public static Show when(boolean condition, Supplier<Component> childFactory) {
+        return new Show(new State<>(condition), childFactory.get(), null);
+    }
+
+    // Factory: modo ternário, condição não-reativa (boolean puro)
+    public static Show when(boolean condition,
+                            Supplier<Component> trueFactory,
+                            Supplier<Component> falseFactory) {
+        return new Show(new State<>(condition), trueFactory.get(), falseFactory.get());
     }
 }
