@@ -28,6 +28,8 @@ public final class Show extends Component {
         this.falseChild = falseChild;
 
         VBox box = (VBox) node;
+        box.setMaxWidth(Double.MAX_VALUE);
+        box.setMaxHeight(Double.MAX_VALUE);
 
         if (falseChild != null) {
             box.getChildren().addAll(trueChild.getNode(), falseChild.getNode());
