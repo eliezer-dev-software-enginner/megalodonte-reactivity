@@ -87,13 +87,15 @@ public final class Show extends Component {
 
     // Factory: modo single, condição não-reativa (boolean puro)
     public static Show when(boolean condition, Supplier<Component> childFactory) {
-        return new Show(new State<>(condition), childFactory.get(), null);
+        Component child = condition
+                ? childFactory.get()
+                : Component.CreateFromJavaFxNode(new javafx.scene.layout.VBox()); // placeholder vazio
+        return new Show(new State<>(condition), child, null);
     }
-
     // Factory: modo ternário, condição não-reativa (boolean puro)
-    public static Show when(boolean condition,
-                            Supplier<Component> trueFactory,
-                            Supplier<Component> falseFactory) {
-        return new Show(new State<>(condition), trueFactory.get(), falseFactory.get());
+    public static Show when(boolean condition, Supplier<Component> trueFactory, Supplier<Component> falseFactory) {
+        Component t = condition ? trueFactory.get() : Component.CreateFromJavaFxNode(new javafx.scene.layout.VBox());
+        Component f = !condition ? falseFactory.get() : Component.CreateFromJavaFxNode(new javafx.scene.layout.VBox());
+        return new Show(new State<>(condition), t, f);
     }
 }
