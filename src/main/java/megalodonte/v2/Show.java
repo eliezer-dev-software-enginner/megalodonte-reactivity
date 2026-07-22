@@ -23,8 +23,8 @@ public final class Show extends Component {
                  Component trueChild,
                  Component falseChild) {
         super(new VBox());
-        this.condition  = condition;
-        this.trueChild  = trueChild;
+        this.condition = condition;
+        this.trueChild = trueChild;
         this.falseChild = falseChild;
 
         VBox box = (VBox) node;
@@ -86,14 +86,25 @@ public final class Show extends Component {
     }
 
     // Factory: modo single, condição não-reativa (boolean puro)
+
+
     public static Show when(boolean condition, Supplier<Component> childFactory) {
-        return new Show(new State<>(condition), childFactory.get(), null);
+        Component child = condition ? childFactory.get() : empty();
+        return new Show(new State<>(condition), child, null);
     }
 
     // Factory: modo ternário, condição não-reativa (boolean puro)
     public static Show when(boolean condition,
                             Supplier<Component> trueFactory,
                             Supplier<Component> falseFactory) {
-        return new Show(new State<>(condition), trueFactory.get(), falseFactory.get());
+        Component trueChild = condition ? trueFactory.get() : empty();
+        Component falseChild = condition ? empty() : falseFactory.get();
+        return new Show(new State<>(condition), trueChild, falseChild);
     }
+
+    private static Component empty() {
+        return Component.CreateFromJavaFxNode(new VBox());
+    }
+
+
 }
