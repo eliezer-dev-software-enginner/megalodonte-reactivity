@@ -1,6 +1,8 @@
 package megalodonte.v2;
 
 import javafx.animation.Animation;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import megalodonte.base.state.ReadableState;
 import megalodonte.base.components.Component;
@@ -28,6 +30,13 @@ public final class Show extends Component {
         this.falseChild = falseChild;
 
         VBox box = (VBox) node;
+        box.setStyle("-fx-background-color:black;");
+        // 1. "Camisa de força" vertical: Força a VBox a ter EXATAMENTE a altura do filho visível
+        box.setMinHeight(Region.USE_PREF_SIZE);
+        box.setMaxHeight(Region.USE_PREF_SIZE);
+
+        // 2. Garante que se o pai for outra VBox, ele nunca vai esticar este componente verticalmente
+        VBox.setVgrow(box, Priority.NEVER);
 
         if (falseChild != null) {
             box.getChildren().addAll(trueChild.getNode(), falseChild.getNode());
@@ -88,7 +97,9 @@ public final class Show extends Component {
     // Factory: modo single, condição não-reativa (boolean puro)
 
 
+    // Factory: modo single, condição não-reativa (boolean puro)
     public static Show when(boolean condition, Supplier<Component> childFactory) {
+        // Se for verdadeiro, pega o filho. Se for falso, cria um nó invisível e desativado de fato.
         Component child = condition ? childFactory.get() : empty();
         return new Show(new State<>(condition), child, null);
     }
@@ -97,14 +108,21 @@ public final class Show extends Component {
     public static Show when(boolean condition,
                             Supplier<Component> trueFactory,
                             Supplier<Component> falseFactory) {
-        Component trueChild = condition ? trueFactory.get() : empty();
-        Component falseChild = condition ? empty() : falseFactory.get();
-        return new Show(new State<>(condition), trueChild, falseChild);
+        // Evita instanciar o factory que nunca será usado!
+        Component selectedChild = condition ? trueFactory.get() : falseFactory.get();
+        return new Show(new State<>(condition), selectedChild, null);
     }
 
+    // Ajuste no método empty para garantir que ele ocupe ZERO espaço de layout de forma segura
     private static Component empty() {
-        return Component.CreateFromJavaFxNode(new VBox());
+        VBox emptyBox = new VBox();
+        emptyBox.setManaged(false);
+        emptyBox.setVisible(false);
+        emptyBox.setMinHeight(0);
+        emptyBox.setMinWidth(0);
+        emptyBox.setMaxHeight(0);
+        emptyBox.setMaxWidth(0);
+        return Component.CreateFromJavaFxNode(emptyBox);
     }
-
 
 }
