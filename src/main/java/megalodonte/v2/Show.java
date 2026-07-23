@@ -30,7 +30,6 @@ public final class Show extends Component {
         this.falseChild = falseChild;
 
         VBox box = (VBox) node;
-        box.setStyle("-fx-background-color:black;");
         // 1. "Camisa de força" vertical: Força a VBox a ter EXATAMENTE a altura do filho visível
         box.setMinHeight(Region.USE_PREF_SIZE);
         box.setMaxHeight(Region.USE_PREF_SIZE);
