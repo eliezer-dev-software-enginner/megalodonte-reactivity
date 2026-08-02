@@ -1,265 +1,222 @@
-# Reactivity
+# megalodonte-reactivity
 
-A simple and lightweight Java library for **reactive state management** with focus on **clean architecture**, **testability**, and **ease of use**.
+Reactive state primitives for the Megalodonte framework: `ComputedState<T>`,
+`ListState<T>`, `ForEachState<T, C>`, `Show`, and `ListenerManager`. `State<T>` and
+`ReadableState<T>` themselves live in `megalodonte-base` (a dependency of this
+module) — everything here builds on top of them.
 
----
+All examples below are real code from `plics-sw` and the demo apps in this
+`megalodonte-ecossystem` repo (`megalodonte-app1-welcome`, `megalodonte-app2-counter`,
+`megalodonte-app3-string-lenght`), not made up for the README.
 
-## ✨ Features
+## Installation (Maven Local)
 
-### 🔄 **State Management**
-- **State<T>** - Mutable state with subscription support
-- **ReadableState<T>** - Read-only state interface
-- **ComputedState<T>** - Derived/computed states
-
-### 📝 **List State Operations**
-Complete reactive list manipulation for **State<List<T>>**:
-
-#### 🔧 **Manipulation Methods**
-- `add(item)` - Add item to list
-- `removeLast()` - Remove last item
-- `remove(item)` - Remove specific item
-- `removeIf(predicate)` - Remove items matching predicate
-- `set(index, item)` - Replace item by position
-- `replace(oldItem, newItem)` - Replace first occurrence
-- `indexOf(item)` - Find item index
-- `clear()` - Remove all items
-
-#### 🔄 **Dynamic List Rendering**
-- **ForEachState** - Reactive component list rendering
-- Declarative API integration with Column/Row components
-- Automatic reconciliation when state changes
-
----
-
-## 📦 Installation (Maven Local)
-
-After publishing locally:
+Publish the library locally:
 
 ```bash
 ./gradlew publishToMavenLocal
 ```
 
-Add to your project:
+Add it to your project:
 
-```gradle
+```kotlin
 repositories {
     mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    implementation("megalodonte:reactivity:1.0.0")
-    implementation("megalodonte:components:1.0.0") // For UI integration
+    implementation("megalodonte:megalodonte-reactivity:1.0.0-beta")
+    implementation("megalodonte:megalodonte-components:1.0.0-beta") // for UI integration
 }
 ```
 
----
+## `State<T>` and `.map(...)`
 
-## 🚀 Basic Usage
-
-### State Management
+`State<T>` (from `megalodonte-base`) is the base mutable, subscribable value. Full
+example from `megalodonte-app2-counter`:
 
 ```java
-import megalodonte.State;
+public class HomeScreen implements ScreenComponent {
+    State<Integer> counter = new State<>(0);
 
-// Create state
-State<String> nameState = State.of("John");
+    @Override
+    public Component render() {
+        ButtonProps btnProps = new ButtonProps().fontSize(30);
 
-// Subscribe to changes
-nameState.subscribe(name -> {
-    System.out.println("Name changed to: " + name);
+        return new Container(new ContainerProps().paddingAll(20)).children(
+                new Text(counter.map(Object::toString), new TextProps().fontSize(90)),
+                new Button("Decrement", btnProps).onClick(() -> counter.set(counter.get() - 1)),
+                new SpacerVertical(10),
+                new Button("Increment", btnProps).onClick(() -> counter.set(counter.get() + 1))
+        );
+    }
+}
+```
+
+`ReadableState<T>` (the read-only supertype `State<T>` implements) ships a default
+`map(Function<T, R>)` — a quick way to derive a single value without reaching for
+`ComputedState` when there's only one dependency, as `counter.map(Object::toString)`
+does above to feed an `int` into a `Text` component that expects a `ReadableState<String>`.
+
+## `ComputedState<T>`
+
+Recomputes automatically whenever any of its declared dependencies change, and only
+notifies subscribers if the recomputed value actually differs from the last one.
+
+Simplest real example — a derived string from a single dependency, from
+`megalodonte-app3-string-lenght`:
+
+```java
+public class HomeScreen implements ScreenComponent {
+    State<String> textState = new State<>("");
+    ComputedState<String> textLenghtComputed = ComputedState.of(
+            () -> "Size is: " + textState.get().length(), textState
+    );
+
+    @Override
+    public Component render() {
+        return new Container(new ContainerProps().paddingAll(20)).children(
+                new Input(textState),
+                new Text(textLenghtComputed)
+        );
+    }
+}
+```
+
+Multiple dependencies — recomputing a currency total whenever price, quantity, *or*
+discount change (trimmed from `TotaisState`, `plics-sw`):
+
+```java
+public TotaisState(State<String> preco, State<String> qtd, State<String> desconto) {
+    this.totalBruto = ComputedState.of(() -> {
+        BigDecimal qtdValue = qtd.get().trim().isEmpty()
+                ? BigDecimal.ZERO : new BigDecimal(qtd.get());
+        BigDecimal precoValue = new BigDecimal(preco.get()).movePointLeft(2);
+        return Utils.toBRLCurrency(qtdValue.multiply(precoValue));
+    }, qtd, preco, desconto);
+}
+```
+
+## `ListState<T>`
+
+Purpose-built reactive list — every mutation method (`add`, `remove`, `removeIf`,
+`clear`, `set(index, item)`, `replace`, `updateIf`, ...) replaces the internal list
+and notifies subscribers, with a built-in `Objects.equals` guard so a no-op `set`
+doesn't fire spurious updates.
+
+Real shopping-cart usage, from `PDVScreenViewModel` (`plics-sw`):
+
+```java
+final ListState<ItemVenda> itensCarrinho = ListState.ofEmpty();
+
+// existing item → bump quantity in place, notify without swapping the list reference
+existente.get().quantidade = existente.get().quantidade.add(BigDecimal.ONE);
+itensCarrinho.refresh();
+
+// new item → append
+itensCarrinho.add(item);
+
+// remove
+itensCarrinho.remove(item);
+```
+
+Reacting to *future* changes only (no fire-on-subscribe) to keep a derived subtotal
+in sync, from the same class's `onInit()`:
+
+```java
+itensCarrinho.onChange(itens -> {
+    BigDecimal total = itens.stream()
+            .map(ItemVenda::totalItem)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    subtotal.set(Utils.deRealParaCentavos(total));
 });
-
-// Update state (triggers subscribers)
-nameState.set("Jane");
 ```
 
-### List State Operations
+Replacing one item by predicate without touching the rest, from
+`VendaMercadoriaScreenViewModel` (`plics-sw`):
 
 ```java
-import megalodonte.State;
-import java.util.Arrays;
-
-// Create list state
-State<List<String>> itemsState = State.of(Arrays.asList("Apple", "Banana"));
-
-// Add items
-itemsState.add("Orange");
-
-// Remove items
-itemsState.removeLast();
-itemsState.remove("Apple");
-
-// Conditional remove
-itemsState.removeIf(item -> ((String)item).startsWith("B"));
-
-// Edit by index
-itemsState.set(0, "Grape");
-
-// Edit by reference
-itemsState.replace("Banana", "Mango");
-
-// Find item index
-int index = itemsState.indexOf("Mango");
-
-// Clear all
-itemsState.clear();
+allDataList.updateIf(it -> it.getId().equals(atualizado.getId()), it -> atualizado);
 ```
 
----
+### `subscribe` vs `onChange` vs `refresh`
 
-## 🎨 ForEachState Integration
+| Method      | Fires immediately on registration | Use it for |
+|-------------|:---:|---|
+| `subscribe` | yes | UI binding — you want the current value as soon as the component mounts |
+| `onChange`  | no  | ViewModel logic — you only care about *future* changes, not the initial value |
+| `refresh`   | n/a | In-place mutation — notify subscribers without replacing the list/state reference |
 
-### Declarative API
+## `ForEachState<T, C>`
+
+Reconciles a `ReadableState<List<T>>` into a `List<C>` of UI components, reusing
+components for items that didn't change (by `equals`) instead of rebuilding
+everything on every update.
+
+Real usage rendering a card grid, from `HomeScreen` (`plics-sw`):
 
 ```java
-import megalodonte.*;
-import megalodonte.components.*;
-import java.util.Arrays;
+private Column centerContent() {
+    var cardsState = State.of(cardItemList);
+    ForEachState<CardItem, Component> cardsForEach = ForEachState.of(cardsState, this::CardColumn);
 
-// Create reactive list
-State<List<Product>> productsState = State.of(Arrays.asList(
-    new Product("Coffee", 15.00),
-    new Product("Bread", 8.00)
-));
-
-// Create ForEachState
-ForEachState<Product, Button> forEachState = ForEachState.of(
-    productsState,
-    product -> new Button(product.name + " - $" + product.price)
-);
-
-// Declarative UI integration
-return new Column()
-    .c_child(new Text("Product List"))
-    .items(forEachState)                     // Automatic reactive rendering!
-    .c_child(new Button("Add Product", () -> {
-        productsState.add(new Product("New Item", 99.00));
-    }))
-    .c_child(new Button("Remove Last", () -> {
-        productsState.removeLast();
-    }));
-```
-
-### How ForEachState Works
-
-1. **Initial Rendering** - Creates components from initial state
-2. **State Changes** - Automatically reconciles when state updates
-3. **No Diff** - Simple replacement strategy (no virtualization)
-4. **No Layout** - Pure component management
-5. **No Pagination** - Renders all items
-
----
-
-## 🧪 Architecture
-
-### 🏗️ **Dependency Inversion Principle (DIP)**
-
-```
-State (Public API)
-    ↓
-ForEachState (Reactive Renderer)
-    ↓
-ComponentFactory (User-defined)
-```
-
-This enables:
-- Unit testing without JavaFX
-- Mockito integration
-- Future implementation flexibility
-
----
-
-## 🧪 Testing
-
-Tests are **100% unitary**, using **JUnit 5 + Mockito**, without dependency on:
-- JavaFX Thread
-- Operating System
-- Graphical Environment
-
-Example test:
-
-```java
-@Test
-void add_shouldAddItemToList() {
-    // Given
-    State<List<String>> state = State.of(Arrays.asList("item1"));
-    
-    // When
-    state.add("item2");
-    
-    // Then
-    List<String> result = state.get();
-    assertEquals(2, result.size());
-    assertTrue(result.contains("item2"));
+    return new Column(new ColumnProps().spacingOf(10).fillWidth()).children(
+            new FlowRow(new FlowRowProps().fillWidth().spacingOf(10))
+                    .withTransition(Animations::riseIn)
+                    .items(cardsForEach)
+                    .children(saudacaoComponent())
+    );
 }
 ```
 
----
+## `Show`
 
-## 🔧 Technologies
+Conditional rendering, single-child or ternary, reactive or plain `boolean`. Real
+usage — only show the installments field for "pay later" sales, from `PDVScreen`:
 
-- **Java 17** (LTS)
-- **JavaFX 17** (for UI components)
-- **JUnit 5**
-- **Mockito**
-- **Gradle**
-
----
-
-## ⚠️ Important Notes
-
-- **No Virtualization** - Renders all items, suitable for small/medium lists
-- **No Diff Algorithm** - Simple reconciliation for performance
-- **No Layout Management** - Pure component state management
-- **Thread Safety** - Subscribe on same thread as UI updates
-
----
-
-## 📁 Project Structure
-
-```
-src/
- ├─ main/java/megalodonte/
- │   ├─ State.java                    # Mutable state
- │   ├─ ReadableState.java           # Read-only interface
- │   ├─ ComputedState.java           # Derived state
- │   └─ ForEachState.java            # Reactive renderer
- │
- └─ test/java/megalodonte/
-    ├─ StateTest.java               # State tests
-    ├─ StateListMethodsTest.java     # List operations tests
-    ├─ StateListExtendedMethodsTest.java # Edit operations tests
-    └─ ForEachStateTest.java        # Renderer tests
+```java
+Show.when(vm.tipoPagamentoIsAPrazo, () ->
+        Components.InputColumn("Nº Parcelas", vm.numeroParcelas, "Ex: 3")
+)
 ```
 
----
+Non-reactive (plain `boolean`) variant, from `VendaMercadoriaScreen`:
 
-## 🎯 Use Cases
+```java
+Show.when(model.getProduto().getImagem() != null,
+        () -> new Image(model.getProduto().getImagem(), new ImageProps().size(100)))
+```
 
-### 🛒 **ERP Applications**
-- Reactive product lists
-- Dynamic form fields
-- Real-time inventory management
+Chain `.withTransition(...)` on either form to animate the enter/exit instead of an
+instant show/hide (see `Animations` in `megalodonte-base`).
 
-### 📱 **Desktop Applications**
-- Settings screens
-- Data tables
-- Dynamic menus
+## `ListenerManager`
 
-### 🎮 **JavaFX Applications**
-- Reactive UI components
-- State synchronization
-- Component lifecycle management
+Global registry every `subscribe(...)` call (across `State`, `ComputedState`,
+`ListState`, ...) registers itself into. Call `ListenerManager.disposeAll()` once,
+on app shutdown, to drop every listener still held — every `Main.java` in this
+ecosystem does it in its `CloseRequest` handler:
 
----
+```java
+MegalodonteApp.run(context -> context.useView(new HomeScreen()), ev -> {
+    if (ev == MegalodonteApp.Event.CloseRequest) {
+        ListenerManager.disposeAll();
+    }
+});
+```
 
-## 📜 License
+## Technologies
+
+- Java 25
+- JavaFX (only `javafx.controls`, for the `Show`/`ForEachState` component plumbing)
+- JUnit 5 + Mockito (tests)
+- Gradle with Kotlin DSL
+
+## License
 
 MIT License
 
----
-
-## 👨‍💻 Author
+## Author
 
 Developed by **Eliezer**.
