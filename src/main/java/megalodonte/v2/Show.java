@@ -53,6 +53,26 @@ public final class Show extends Component {
         return this;
     }
 
+    /**
+     * Deixa este Show esticar verticalmente se o pai (uma VBox) oferecer mais
+     * espaço, em vez de travar na altura preferida do filho visível (o padrão do
+     * construtor, ver acima). Necessário quando o próprio filho visível precisa
+     * de altura real pra funcionar — por exemplo um {@code Scroll} lá dentro, que
+     * só rola de verdade se receber uma altura delimitada pra se conter.
+     */
+    public Show fillHeight() {
+        VBox box = (VBox) node;
+        // Desfaz TAMBÉM o minHeight(USE_PREF_SIZE) do construtor, não só o max -
+        // sem isso este Show nunca poderia ficar menor que a altura preferida do
+        // filho visível (ex.: uma lista inteira sem cortar dentro de um Scroll),
+        // o que forçaria toda a árvore acima a crescer além do espaço real da
+        // janela em vez de dar ao filho uma altura delimitada pra rolar dentro.
+        box.setMinHeight(Region.USE_COMPUTED_SIZE);
+        box.setMaxHeight(Double.MAX_VALUE);
+        VBox.setVgrow(box, Priority.ALWAYS);
+        return this;
+    }
+
     private void applyVisibility(boolean value) {
         applyTo(trueChild, value);
         if (falseChild != null) applyTo(falseChild, !value);
