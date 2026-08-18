@@ -5,7 +5,6 @@ import megalodonte.base.state.ReadableState;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -75,8 +74,14 @@ public class ListState<E> implements ReadableState<List<E>> {
      * @param newList new list to set
      */
     public void set(List<E> newList) {
-        if (Objects.equals(this.value, newList)) {
-            return; // ← proteção centralizada
+        // Identidade, não conteúdo: List.equals() compara elemento a elemento via equals() de
+        // cada um. Métodos como updateIf() mutam um item já presente na lista e devolvem a
+        // MESMA referência — a lista "nova" tem os mesmos objetos da antiga, então
+        // Objects.equals() via conteúdo achava "igual" e cancelava a notificação, mesmo o
+        // objeto tendo mudado de verdade (campos mutados in-place). == aqui só bloqueia o caso
+        // realmente redundante: chamar set() de novo com a EXATA mesma referência de lista.
+        if (this.value == newList) {
+            return;
         }
 
         this.value = newList;
