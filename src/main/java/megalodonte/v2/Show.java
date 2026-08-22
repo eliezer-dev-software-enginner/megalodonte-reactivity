@@ -38,9 +38,9 @@ public final class Show extends Component {
         VBox.setVgrow(box, Priority.NEVER);
 
         if (falseChild != null) {
-            box.getChildren().addAll(trueChild.getNode(), falseChild.getNode());
+            box.getChildren().addAll(trueChild.getJavaFxNode(), falseChild.getJavaFxNode());
         } else {
-            box.getChildren().add(trueChild.getNode());
+            box.getChildren().add(trueChild.getJavaFxNode());
         }
 
         applyVisibility(condition.get());
@@ -80,20 +80,20 @@ public final class Show extends Component {
 
     private void applyTo(Component c, boolean entering) {
         if (transition == null) {
-            c.getNode().setVisible(entering);
-            c.getNode().setManaged(entering);
+            c.getJavaFxNode().setVisible(entering);
+            c.getJavaFxNode().setManaged(entering);
             return;
         }
         if (entering) {
-            c.getNode().setVisible(true);
-            c.getNode().setManaged(true);
+            c.getJavaFxNode().setVisible(true);
+            c.getJavaFxNode().setManaged(true);
         }
         Animation anim = transition.play(c, entering);
         if (anim != null) {
             if (!entering) {
                 anim.setOnFinished(e -> {
-                    c.getNode().setVisible(false);
-                    c.getNode().setManaged(false);
+                    c.getJavaFxNode().setVisible(false);
+                    c.getJavaFxNode().setManaged(false);
                 });
             }
             anim.play();
