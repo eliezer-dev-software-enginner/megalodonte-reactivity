@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  */
 public class ComputedState<T> implements ReadableState<T> {
 
-    private T value;
+    private volatile T value;
 
     private ComputedState(Supplier<T> compute,
                            ReadableState<?>... deps) {

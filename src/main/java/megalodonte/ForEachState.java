@@ -12,6 +12,8 @@ public class ForEachState<T, C> implements megalodonte.base.state.ForEachState<T
     private final List<C> components = new ArrayList<>();
     private final List<T> lastItems = new ArrayList<>();
 
+    private final Object lock = new Object();
+
     private ForEachState(ReadableState<List<T>> state, Function<T, C> componentFactory) {
         this.state = state;
         this.componentFactory = componentFactory;
@@ -25,7 +27,9 @@ public class ForEachState<T, C> implements megalodonte.base.state.ForEachState<T
 
     @Override
     public List<C> getComponents() {
-        return new ArrayList<>(components);
+        synchronized (lock) {
+            return new ArrayList<>(components);
+        }
     }
 
     @Override
@@ -38,25 +42,27 @@ public class ForEachState<T, C> implements megalodonte.base.state.ForEachState<T
             newItems = new ArrayList<>();
         }
 
-        for (int i = lastItems.size() - 1; i >= newItems.size(); i--) {
-            components.remove(i);
-            lastItems.remove(i);
-        }
+        synchronized (lock) {
+            for (int i = lastItems.size() - 1; i >= newItems.size(); i--) {
+                components.remove(i);
+                lastItems.remove(i);
+            }
 
-        for (int i = 0; i < newItems.size(); i++) {
-            T newItem = newItems.get(i);
+            for (int i = 0; i < newItems.size(); i++) {
+                T newItem = newItems.get(i);
 
-            if (i < lastItems.size()) {
-                T oldItem = lastItems.get(i);
-                if (!java.util.Objects.equals(oldItem, newItem)) {
+                if (i < lastItems.size()) {
+                    T oldItem = lastItems.get(i);
+                    if (!java.util.Objects.equals(oldItem, newItem)) {
+                        C newComponent = componentFactory.apply(newItem);
+                        components.set(i, newComponent);
+                        lastItems.set(i, newItem);
+                    }
+                } else {
                     C newComponent = componentFactory.apply(newItem);
-                    components.set(i, newComponent);
-                    lastItems.set(i, newItem);
+                    components.add(newComponent);
+                    lastItems.add(newItem);
                 }
-            } else {
-                C newComponent = componentFactory.apply(newItem);
-                components.add(newComponent);
-                lastItems.add(newItem);
             }
         }
     }

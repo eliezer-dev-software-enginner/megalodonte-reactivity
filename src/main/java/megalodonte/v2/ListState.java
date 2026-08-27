@@ -25,7 +25,7 @@ import java.util.function.Predicate;
  */
 public class ListState<E> implements ReadableState<List<E>> {
 
-    private List<E> value;
+    private volatile List<E> value;
     private final List<Consumer<List<E>>> listeners = new ArrayList<>();
 
     public ListState(List<E> initial) {
