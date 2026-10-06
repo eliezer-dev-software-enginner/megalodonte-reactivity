@@ -1,8 +1,13 @@
 # megalodonte-reactivity
 
+The desktop library still includes JavaFX Show. Android consumes
+`megalodonte-reactivity-portable`, which builds the same neutral sources against
+core. ComputedState/ForEachState are now closeable; observe returns disposable
+subscriptions. Do not place both reactivity artifacts on the same classpath.
+
 Reactive state primitives for the Megalodonte framework: `ComputedState<T>`,
 `ListState<T>`, `ForEachState<T, C>`, `Show`, and `ListenerManager`. `State<T>` and
-`ReadableState<T>` themselves live in `megalodonte-base` (a dependency of this
+`ReadableState<T>` themselves live in `megalodonte-core` (transitive through base, a dependency of this
 module) — everything here builds on top of them.
 
 All examples below are real code from `plics-sw` and the demo apps in this
@@ -33,7 +38,7 @@ dependencies {
 
 ## `State<T>` and `.map(...)`
 
-`State<T>` (from `megalodonte-base`) is the base mutable, subscribable value. Full
+`State<T>` (from `megalodonte-core`) is the base mutable, subscribable value. Full
 example from `megalodonte-app2-counter`:
 
 ```java

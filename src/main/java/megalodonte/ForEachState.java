@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ForEachState<T, C> implements megalodonte.base.state.ForEachState<T, C> {
+public class ForEachState<T, C> implements megalodonte.base.state.ForEachState<T, C>, AutoCloseable {
+    private final megalodonte.base.state.Subscription subscription;
 
     private final ReadableState<List<T>> state;
     private final Function<T, C> componentFactory;
@@ -18,7 +19,7 @@ public class ForEachState<T, C> implements megalodonte.base.state.ForEachState<T
         this.state = state;
         this.componentFactory = componentFactory;
 
-        state.subscribe(this::reconcile);
+        subscription = state.observe(this::reconcile);
     }
 
     public static <T, C> ForEachState<T, C> of(ReadableState<List<T>> state, Function<T, C> componentFactory) {
@@ -36,6 +37,7 @@ public class ForEachState<T, C> implements megalodonte.base.state.ForEachState<T
     public ReadableState<List<T>> getState() {
         return state;
     }
+    @Override public void close() { subscription.close(); }
 
     private void reconcile(List<T> newItems) {
         if (newItems == null) {

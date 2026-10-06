@@ -98,8 +98,9 @@ public class ListState<E> implements ReadableState<List<E>> {
      */
     public void subscribe(Consumer<List<E>> listener) {
         listeners.add(listener);
-        ListenerManager.register(listener);
-        listener.accept(value);
+        ListenerManager.register(listener, () -> unsubscribe(listener));
+        try { listener.accept(value); }
+        catch (RuntimeException error) { unsubscribe(listener); throw error; }
     }
 
     /**
@@ -111,8 +112,13 @@ public class ListState<E> implements ReadableState<List<E>> {
      */
     public void onChange(Consumer<List<E>> listener) {
         listeners.add(listener);
-        ListenerManager.register(listener);
+        ListenerManager.register(listener, () -> unsubscribe(listener));
         // intencionalmente não chama listener.accept(value) aqui
+    }
+
+    @Override public boolean unsubscribe(Consumer<List<E>> listener) {
+        ListenerManager.unregister(listener);
+        return listeners.remove(listener);
     }
 
     /**

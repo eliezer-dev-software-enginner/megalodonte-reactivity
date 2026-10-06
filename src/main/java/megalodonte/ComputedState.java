@@ -33,7 +33,8 @@ import java.util.function.Supplier;
  * @author Eliezer
  * @since 1.0.0
  */
-public class ComputedState<T> implements ReadableState<T> {
+public class ComputedState<T> implements ReadableState<T>, AutoCloseable {
+    private final List<megalodonte.base.state.Subscription> dependencies = new java.util.ArrayList<>();
 
     private volatile T value;
 
@@ -44,15 +45,17 @@ public class ComputedState<T> implements ReadableState<T> {
             T newValue = compute.get();
             if (value == null || !value.equals(newValue)) {
                 value = newValue;
-                listeners.forEach(l -> l.accept(value));
+                List.copyOf(listeners).forEach(l -> l.accept(value));
             }
         };
 
-        for (ReadableState<?> dep : deps) {
-            dep.subscribe(e -> recompute.run());
+        try {
+            for (ReadableState<?> dep : deps) dependencies.add(dep.observe(e -> recompute.run()));
+            recompute.run();
+        } catch (RuntimeException error) {
+            close();
+            throw error;
         }
-
-        recompute.run();
     }
 
     private final List<Consumer<T>> listeners = new java.util.ArrayList<>();
@@ -65,13 +68,24 @@ public class ComputedState<T> implements ReadableState<T> {
     @Override
     public void subscribe(Consumer<T> listener) {
         listeners.add(listener);
-        ListenerManager.register(listener);
-        listener.accept(value);
+        ListenerManager.register(listener, () -> unsubscribe(listener));
+        try { listener.accept(value); }
+        catch (RuntimeException error) { unsubscribe(listener); throw error; }
     }
 
     @Override
     public boolean isNull() {
         return get() == null;
+    }
+
+    @Override public boolean unsubscribe(Consumer<T> listener) {
+        ListenerManager.unregister(listener);
+        return listeners.remove(listener);
+    }
+    @Override public void close() {
+        dependencies.forEach(megalodonte.base.state.Subscription::close);
+        dependencies.clear();
+        List.copyOf(listeners).forEach(this::unsubscribe);
     }
 
     /**
