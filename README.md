@@ -1,20 +1,25 @@
 # megalodonte-reactivity
 
-The desktop library still includes JavaFX Show. Android consumes
-`megalodonte-reactivity-portable`, which builds the same neutral sources against
-core. ComputedState/ForEachState are now closeable; observe returns disposable
-subscriptions. Do not place both reactivity artifacts on the same classpath.
+This module includes JavaFX-based `Show` and depends on `megalodonte-base`.
+`ComputedState` and `ForEachState` implement `AutoCloseable`; call `close()`
+when they are no longer needed. `subscribe(...)` returns `void`; use
+`unsubscribe(listener)` or `ListenerManager.disposeAll()` to remove listeners.
 
 Reactive state primitives for the Megalodonte framework: `ComputedState<T>`,
 `ListState<T>`, `ForEachState<T, C>`, `Show`, and `ListenerManager`. `State<T>` and
-`ReadableState<T>` themselves live in `megalodonte-core` (transitive through base, a dependency of this
-module) — everything here builds on top of them.
+`ReadableState<T>` are imported from `megalodonte.base.state` and supplied by
+`megalodonte-base`, a dependency of this module.
 
-All examples below are real code from `plics-sw` and the demo apps in this
-`megalodonte-ecossystem` repo (`megalodonte-app1-welcome`, `megalodonte-app2-counter`,
-`megalodonte-app3-string-lenght`), not made up for the README.
+The UI examples below refer to separate applications and are illustrative;
+their source files are not included in this repository. A self-contained
+`ForEachState` example is available at
+`src/main/java/megalodonte/ForEachStateExample.java`.
 
 ## Installation (Maven Local)
+
+This build requires a Java 25 toolchain. It resolves `megalodonte-base:1.0.0-beta`
+from Maven Central or Maven Local; ensure that dependency is available before
+building. The included Gradle wrapper uses Gradle 9.2.0.
 
 Publish the library locally:
 
@@ -32,9 +37,11 @@ repositories {
 
 dependencies {
     implementation("megalodonte:megalodonte-reactivity:1.0.0-beta")
-    implementation("megalodonte:megalodonte-components:1.0.0-beta") // for UI integration
 }
 ```
+
+UI examples also require the appropriate UI libraries, which are not provided
+by this module.
 
 ## `State<T>` and `.map(...)`
 
@@ -89,8 +96,9 @@ public class HomeScreen implements ScreenComponent {
 }
 ```
 
-Multiple dependencies — recomputing a currency total whenever price, quantity, *or*
-discount change (trimmed from `TotaisState`, `plics-sw`):
+Multiple declared dependencies for a currency total (trimmed from `TotaisState`,
+`plics-sw`). This excerpt calculates from price and quantity; although it lists
+discount as a dependency, it does not apply the discount:
 
 ```java
 public TotaisState(State<String> preco, State<String> qtd, State<String> desconto) {
@@ -107,8 +115,9 @@ public TotaisState(State<String> preco, State<String> qtd, State<String> descont
 
 Purpose-built reactive list — every mutation method (`add`, `remove`, `removeIf`,
 `clear`, `set(index, item)`, `replace`, `updateIf`, ...) replaces the internal list
-and notifies subscribers, with a built-in `Objects.equals` guard so a no-op `set`
-doesn't fire spurious updates.
+and notifies subscribers. `set(List<E>)` skips notification only when passed
+the same list instance; a new list instance triggers notification even if its
+contents compare equal.
 
 Real shopping-cart usage, from `PDVScreenViewModel` (`plics-sw`):
 
@@ -155,8 +164,8 @@ allDataList.updateIf(it -> it.getId().equals(atualizado.getId()), it -> atualiza
 
 ## `ForEachState<T, C>`
 
-Reconciles a `ReadableState<List<T>>` into a `List<C>` of UI components, reusing
-components for items that didn't change (by `equals`) instead of rebuilding
+Reconciles a `ReadableState<List<T>>` into a `List<C>` of components, reusing
+components at the same index when their items compare equal instead of rebuilding
 everything on every update.
 
 Real usage rendering a card grid, from `HomeScreen` (`plics-sw`):
@@ -198,10 +207,9 @@ instant show/hide (see `Animations` in `megalodonte-base`).
 
 ## `ListenerManager`
 
-Global registry every `subscribe(...)` call (across `State`, `ComputedState`,
-`ListState`, ...) registers itself into. Call `ListenerManager.disposeAll()` once,
-on app shutdown, to drop every listener still held — every `Main.java` in this
-ecosystem does it in its `CloseRequest` handler:
+Global listener registry used by `ComputedState` and `ListState` in this module.
+Call `ListenerManager.disposeAll()` at application shutdown to remove registered
+listeners. The following is an integration example from a separate application:
 
 ```java
 MegalodonteApp.run(context -> context.useView(new HomeScreen()), ev -> {
@@ -214,13 +222,15 @@ MegalodonteApp.run(context -> context.useView(new HomeScreen()), ev -> {
 ## Technologies
 
 - Java 25
-- JavaFX (only `javafx.controls`, for the `Show`/`ForEachState` component plumbing)
+- JavaFX 25.0.1 (`javafx.controls` configured by the Gradle plugin; the module
+  declares `javafx.graphics`)
 - JUnit 5 + Mockito (tests)
 - Gradle with Kotlin DSL
 
 ## License
 
-MIT License
+No license file is present in this repository. The licensing terms require
+confirmation by the project maintainer.
 
 ## Author
 
