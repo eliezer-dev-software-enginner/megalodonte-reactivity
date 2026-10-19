@@ -45,7 +45,7 @@ by this module.
 
 ## `State<T>` and `.map(...)`
 
-`State<T>` (from `megalodonte-core`) is the base mutable, subscribable value. Full
+`State<T>` (from `megalodonte-base`) is the base mutable, subscribable value. Full
 example from `megalodonte-app2-counter`:
 
 ```java
@@ -113,9 +113,10 @@ public TotaisState(State<String> preco, State<String> qtd, State<String> descont
 
 ## `ListState<T>`
 
-Purpose-built reactive list — every mutation method (`add`, `remove`, `removeIf`,
-`clear`, `set(index, item)`, `replace`, `updateIf`, ...) replaces the internal list
-and notifies subscribers. `set(List<E>)` skips notification only when passed
+Purpose-built reactive list. Methods such as `add`, `removeIf`, `clear`,
+`set(index, item)`, `replace`, and `updateIf` replace the internal list and notify
+subscribers when they perform an update; `remove` and `replace` leave it unchanged
+when the item is not found. `set(List<E>)` skips notification only when passed
 the same list instance; a new list instance triggers notification even if its
 contents compare equal.
 
@@ -159,8 +160,8 @@ allDataList.updateIf(it -> it.getId().equals(atualizado.getId()), it -> atualiza
 | Method      | Fires immediately on registration | Use it for |
 |-------------|:---:|---|
 | `subscribe` | yes | UI binding — you want the current value as soon as the component mounts |
-| `onChange`  | no  | ViewModel logic — you only care about *future* changes, not the initial value |
-| `refresh`   | n/a | In-place mutation — notify subscribers without replacing the list/state reference |
+| `onChange`  | no  | `ListState` logic — you only care about *future* changes, not the initial value |
+| `refresh`   | n/a | `ListState` in-place item mutation — notify subscribers without replacing the list reference |
 
 ## `ForEachState<T, C>`
 
