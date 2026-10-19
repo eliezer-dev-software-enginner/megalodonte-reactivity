@@ -43,7 +43,7 @@ public class ComputedState<T> implements ReadableState<T>, AutoCloseable {
 
         Runnable recompute = () -> {
             T newValue = compute.get();
-            if (value == null || !value.equals(newValue)) {
+            if (!java.util.Objects.equals(value, newValue)) {
                 value = newValue;
                 List.copyOf(listeners).forEach(l -> l.accept(value));
             }
