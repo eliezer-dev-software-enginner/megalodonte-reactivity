@@ -205,14 +205,19 @@ public class ListState<E> implements ReadableState<List<E>> {
      */
     public void removeIf(Predicate<E> filter) {
         List<E> newList = new ArrayList<>();
+        boolean removed = false;
         
         for (E item : value) {
-            if (!filter.test(item)) {
+            if (filter.test(item)) {
+                removed = true;
+            } else {
                 newList.add(item);
             }
         }
         
-        set(newList);
+        if (removed) {
+            set(newList);
+        }
     }
 
     /**
