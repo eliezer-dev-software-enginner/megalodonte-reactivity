@@ -15,6 +15,9 @@ their source files are not included in this repository. A self-contained
 `ForEachState` example is available at
 `src/main/java/megalodonte/ForEachStateExample.java`.
 
+`ComputedState`, `ForEachState`, and `ListenerManager` are in the `megalodonte`
+package. `ListState` and `Show` are in `megalodonte.v2`.
+
 ## Installation (Maven Local)
 
 This build requires a Java 25 toolchain. It resolves `megalodonte-base:1.0.0-beta`
@@ -42,6 +45,30 @@ dependencies {
 
 UI examples also require the appropriate UI libraries, which are not provided
 by this module.
+
+## Minimal usage
+
+This example uses this library and its `megalodonte-base` dependency, without
+the separate UI applications referenced below:
+
+```java
+import megalodonte.ComputedState;
+import megalodonte.v2.ListState;
+
+public class Example {
+    public static void main(String[] args) {
+        var names = ListState.<String>ofEmpty();
+        try (var count = ComputedState.of(() -> names.get().size(), names)) {
+            count.subscribe(value -> System.out.println("Count: " + value));
+            names.add("Ada");
+        }
+    }
+}
+```
+
+`subscribe` immediately prints `Count: 0`; adding the name prints `Count: 1`.
+Call `unsubscribe(listener)` when a subscription is no longer needed, or
+`ListenerManager.disposeAll()` at application shutdown.
 
 ## `State<T>` and `.map(...)`
 
