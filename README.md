@@ -1,6 +1,7 @@
 # megalodonte-reactivity
 
-This module includes JavaFX-based `Show` and depends on `megalodonte-base`.
+This Java library provides reactive state utilities for the Megalodonte
+framework. It includes JavaFX-based `Show` and depends on `megalodonte-base`.
 `ComputedState` and `ForEachState` implement `AutoCloseable`; call `close()`
 when they are no longer needed. `subscribe(...)` returns `void`; use
 `unsubscribe(listener)` or `ListenerManager.disposeAll()` to remove listeners.
@@ -10,10 +11,10 @@ Reactive state primitives for the Megalodonte framework: `ComputedState<T>`,
 `ReadableState<T>` are imported from `megalodonte.base.state` and supplied by
 `megalodonte-base`, a dependency of this module.
 
-The UI examples below refer to separate applications and are illustrative;
-their source files are not included in this repository. A self-contained
-`ForEachState` example is available at
-`src/main/java/megalodonte/ForEachStateExample.java`.
+The UI snippets below are illustrative excerpts from separate applications;
+their source files and UI dependencies are not included here, so they cannot
+be run from this repository alone. A self-contained `ForEachState` example is
+available in [ForEachStateExample.java](src/main/java/megalodonte/ForEachStateExample.java).
 
 `ComputedState`, `ForEachState`, and `ListenerManager` are in the `megalodonte`
 package. `ListState` and `Show` are in `megalodonte.v2`.
@@ -21,8 +22,15 @@ package. `ListState` and `Show` are in `megalodonte.v2`.
 ## Installation (Maven Local)
 
 This build requires a Java 25 toolchain. It resolves `megalodonte-base:1.0.0-beta`
-from Maven Central or Maven Local; ensure that dependency is available before
-building. The included Gradle wrapper uses Gradle 9.2.0.
+from Maven Central or Maven Local; ensure that dependency is available in one
+of those repositories before building. The included Gradle wrapper uses
+Gradle 9.2.0. Run the commands below from the repository root.
+
+Check the build and tests:
+
+```bash
+./gradlew test
+```
 
 Publish the library locally:
 
