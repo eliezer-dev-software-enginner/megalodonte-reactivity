@@ -6,6 +6,13 @@ framework. It includes JavaFX-based `Show` and depends on `megalodonte-base`.
 when they are no longer needed. `subscribe(...)` returns `void`; use
 `unsubscribe(listener)` or `ListenerManager.disposeAll()` to remove listeners.
 
+With matching updated core/base libraries, registrations through `ListenerManager`
+(including `ComputedState` and `ListState`) participate in `SubscriptionScope`.
+Desktop live reload uses that scope to detach subscriptions created synchronously
+by an old or rejected render without resetting ViewModel state. Subscriptions
+created outside that capture retain their normal lifecycle; asynchronous work
+still needs explicit cleanup. See the [live reload guide](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
+
 Reactive state primitives for the Megalodonte framework: `ComputedState<T>`,
 `ListState<T>`, `ForEachState<T, C>`, `Show`, and `ListenerManager`. `State<T>` and
 `ReadableState<T>` are imported from `megalodonte.base.state` and supplied by

@@ -13,7 +13,13 @@ public class ListenerManager {
     public static void register(Consumer<?> listener) {
         register(listener, () -> {});
     }
-    public static void register(Consumer<?> listener, Runnable cleanup) { listeners.add(new Entry(listener, cleanup)); }
+    public static void register(Consumer<?> listener, Runnable cleanup) {
+        Entry entry = new Entry(listener, cleanup);
+        listeners.add(entry);
+        megalodonte.base.state.SubscriptionScope.onClose(() -> {
+            try { cleanup.run(); } finally { listeners.remove(entry); }
+        });
+    }
 
     public static boolean unregister(Consumer<?> listener) {
         for (int i = 0; i < listeners.size(); i++) {
