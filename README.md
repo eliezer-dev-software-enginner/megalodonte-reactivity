@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
 # megalodonte-reactivity
 
 This Java library provides reactive state utilities for the Megalodonte
