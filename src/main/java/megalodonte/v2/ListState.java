@@ -5,6 +5,7 @@ import megalodonte.base.state.ReadableState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -218,6 +219,18 @@ public class ListState<E> implements ReadableState<List<E>> {
         if (removed) {
             set(newList);
         }
+    }
+
+    /**
+     * Creates a reactive read-only view containing only items that match the predicate.
+     * The filtered view is recalculated whenever this list changes.
+     *
+     * @param predicate condition used to retain items
+     * @return a reactive filtered view of this list
+     */
+    public ReadableState<List<E>> filter(Predicate<? super E> predicate) {
+        Objects.requireNonNull(predicate, "predicate");
+        return map(items -> items.stream().filter(predicate).toList());
     }
 
     /**

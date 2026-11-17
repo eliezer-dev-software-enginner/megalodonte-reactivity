@@ -166,6 +166,13 @@ when the item is not found. `set(List<E>)` skips notification only when passed
 the same list instance; a new list instance triggers notification even if its
 contents compare equal.
 
+`filter(Predicate)` returns a read-only reactive view that keeps matching items in
+sync with the source list:
+
+```java
+ReadableState<List<Ad>> urgentAds = ads.filter(Ad::urgent);
+```
+
 Real shopping-cart usage, from `PDVScreenViewModel` (`plics-sw`):
 
 ```java
