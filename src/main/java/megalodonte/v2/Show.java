@@ -14,12 +14,18 @@ import java.util.function.Supplier;
  * Conditional rendering component.
  * Shows or hides a component based on reactive state.
  */
-public final class Show extends Component {
+public final class Show extends Component implements megalodonte.contracts.ConditionalContent<Component> {
     private final ReadableState<Boolean> condition;
     private final Component trueChild;
     private final Component falseChild; // null no modo single
 
     private Transition transition; // null = sem animação
+
+    @Override public ReadableState<Boolean> condition() { return condition; }
+    @Override public Component trueContent() { return trueChild; }
+    @Override public java.util.Optional<Component> falseContent() {
+        return java.util.Optional.ofNullable(falseChild);
+    }
 
     private Show(ReadableState<Boolean> condition,
                  Component trueChild,

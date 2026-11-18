@@ -1,1 +1,1 @@
-rootProject.name = "megalodonte-reactivity"
+rootProject.name = "megalodonte-reactivity-desktop"

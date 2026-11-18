@@ -75,7 +75,7 @@ tasks.named<Test>("test") {
 }
 
 tasks.jar {
-    archiveBaseName.set("megalodonte-reactivity")
+    archiveBaseName.set("megalodonte-reactivity-desktop")
 
     manifest {
         attributes(
@@ -90,7 +90,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            artifactId = "megalodonte-reactivity"
+            artifactId = "megalodonte-reactivity-desktop"
         }
     }
 }

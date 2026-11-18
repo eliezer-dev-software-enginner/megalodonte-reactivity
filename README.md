@@ -2,7 +2,7 @@
   <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
 </p>
 
-# megalodonte-reactivity
+# megalodonte-reactivity-desktop
 
 This Java library provides reactive state utilities for the Megalodonte
 framework. It includes JavaFX-based `Show` and depends on `megalodonte-base-desktop`.
@@ -58,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    implementation("megalodonte:megalodonte-reactivity:1.0.0-beta")
+    implementation("megalodonte:megalodonte-reactivity-desktop:1.0.0-beta")
 }
 ```
 

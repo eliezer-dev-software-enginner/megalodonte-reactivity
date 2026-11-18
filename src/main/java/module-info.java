@@ -1,5 +1,5 @@
-module megalodonte.reactivity {
-    requires transitive megalodonte.base;
+module megalodonte.reactivity.desktop {
+    requires transitive megalodonte.base.desktop;
 
     requires transitive javafx.graphics;
 
