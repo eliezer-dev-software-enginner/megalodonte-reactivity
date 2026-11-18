@@ -5,7 +5,7 @@
 # megalodonte-reactivity
 
 This Java library provides reactive state utilities for the Megalodonte
-framework. It includes JavaFX-based `Show` and depends on `megalodonte-base`.
+framework. It includes JavaFX-based `Show` and depends on `megalodonte-base-desktop`.
 `ComputedState` and `ForEachState` implement `AutoCloseable`; call `close()`
 when they are no longer needed. `subscribe(...)` returns `void`; use
 `unsubscribe(listener)` or `ListenerManager.disposeAll()` to remove listeners.
@@ -20,7 +20,7 @@ still needs explicit cleanup. See the [live reload guide](https://github.com/eli
 Reactive state primitives for the Megalodonte framework: `ComputedState<T>`,
 `ListState<T>`, `ForEachState<T, C>`, `Show`, and `ListenerManager`. `State<T>` and
 `ReadableState<T>` are imported from `megalodonte.base.state` and supplied by
-`megalodonte-base`, a dependency of this module.
+`megalodonte-base-desktop`, a dependency of this module.
 
 The UI snippets below are illustrative excerpts from separate applications;
 their source files and UI dependencies are not included here, so they cannot
@@ -32,7 +32,7 @@ package. `ListState` and `Show` are in `megalodonte.v2`.
 
 ## Installation (Maven Local)
 
-This build requires a Java 25 toolchain. It resolves `megalodonte-base:1.0.0-beta`
+This build requires a Java 25 toolchain. It resolves `megalodonte-base-desktop:1.0.0-beta`
 from Maven Central or Maven Local; ensure that dependency is available in one
 of those repositories before building. The included Gradle wrapper uses
 Gradle 9.2.0. Run the commands below from the repository root.
@@ -67,7 +67,7 @@ by this module.
 
 ## Minimal usage
 
-This example uses this library and its `megalodonte-base` dependency, without
+This example uses this library and its `megalodonte-base-desktop` dependency, without
 the separate UI applications referenced below:
 
 ```java
@@ -91,7 +91,7 @@ Call `unsubscribe(listener)` when a subscription is no longer needed, or
 
 ## `State<T>` and `.map(...)`
 
-`State<T>` (from `megalodonte-base`) is the base mutable, subscribable value. Full
+`State<T>` (from `megalodonte-base-desktop`) is the base mutable, subscribable value. Full
 example from `megalodonte-app2-counter`:
 
 ```java
@@ -257,7 +257,7 @@ Show.when(model.getProduto().getImagem() != null,
 ```
 
 Chain `.withTransition(...)` on either form to animate the enter/exit instead of an
-instant show/hide (see `Animations` in `megalodonte-base`).
+instant show/hide (see `Animations` in `megalodonte-base-desktop`).
 
 ## `ListenerManager`
 
